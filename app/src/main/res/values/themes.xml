@@ -1,0 +1,13 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.WoodsCraft" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <style name="Theme.WoodsCraft" parent="Base.Theme.WoodsCraft" />
+
+    <style name="App.Custom.Indicate" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/light_brawn1</item>
+    </style>
+</resources>

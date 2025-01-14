@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="16sp"
+    app:cardBackgroundColor="@color/brawn"
+    app:cardCornerRadius="20sp">
+    <EditText
+        android:id="@+id/dialogEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16sp"
+        android:background="@drawable/edit_text_bg"
+        android:padding="15sp"
+        android:hint="Enter"
+        android:textColor="@color/dark_brawn"
+        android:textStyle="bold"
+        android:textSize="18sp"/>
+
+</com.google.android.material.card.MaterialCardView>
