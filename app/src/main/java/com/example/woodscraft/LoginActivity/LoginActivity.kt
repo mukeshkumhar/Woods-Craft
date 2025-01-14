@@ -75,7 +75,7 @@ class LoginActivity : AppCompatActivity() {
                         userEditor.putBoolean("user_admin",response.body()?.data?.User?.admin!!)
                         userEditor.apply()
 
-                        val login = response.message()
+                        val login = response.body()?.message
                         Toast.makeText(this@LoginActivity,login, Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                         finish()

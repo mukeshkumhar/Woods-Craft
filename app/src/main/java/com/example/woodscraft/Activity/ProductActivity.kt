@@ -3,6 +3,9 @@ package com.example.woodscraft.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.StrikethroughSpan
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -46,6 +49,10 @@ class ProductActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.addToCart.setOnClickListener {
+
+        }
+
         val productId = intent.getStringExtra("productId")
         val productName = intent.getStringExtra("productName")
         val productImage = intent.getStringExtra("productImage")
@@ -58,11 +65,22 @@ class ProductActivity : AppCompatActivity() {
             .load(productImage)
             .into(binding.productImg)
 
+        val mrp = productPrice.toString()
+
+        val spannableString = SpannableString(mrp)
+        spannableString.setSpan(
+            StrikethroughSpan(),
+            0, // Start index of the strikethrough
+            mrp!!.length, // End index of the strikethrough
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
         binding.titleTxt.text = productName
         binding.subtitleTxt.text = productDes
         binding.ratingTxt.text = productRating
-        binding.priceTxt.text = "₹ ${productPrice}"
+        binding.priceTxt.text = "₹$spannableString"
         binding.summeryText.text = productSubtitle
+        binding.currentPrice.text = "₹$productPrice"
 
         val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val authInterceptor = AuthInterceptor(sharedPreferences)
@@ -101,6 +119,7 @@ class ProductActivity : AppCompatActivity() {
                                     )
                                 } else {
                                     println("Adding to wishlist failed not getting response")
+                                    Toast.makeText(this@ProductActivity,"Login Again",Toast.LENGTH_SHORT).show()
                                     isProductInWishlist = false
                                     binding.likeImg.setColorFilter(
                                         ContextCompat.getColor(
