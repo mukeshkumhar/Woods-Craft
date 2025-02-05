@@ -60,4 +60,5 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
     implementation (libs.okhttp)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 }

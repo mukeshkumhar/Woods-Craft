@@ -24,11 +24,12 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
     @POST("user/register") fun registerUser(@Body user: RegisterUser): Call<RegisterResponse>
     @POST("user/login") fun loginUser(@Body user: LoginUser): Call<LoginResponse>
-    @GET("products/new-product") fun getAllProduct(): Call<ListOfProduct>
+    @GET("products/new-product") suspend fun getAllProduct(@Query("page") page: Int, @Query("limit") limit: Int): ListOfProduct
     @POST("carts/wishlist/{productId}") fun addToWishlist(@Path("productId") productId: String): Call<AddWishlistResponse>
     @DELETE("carts/wishlist/{productId}") fun removeFromWishlist(@Path("productId") productId: String): Call<RemoveWishlistResponse>
     @GET("carts/wishlist/") fun getWishList(): Call<WishListResponse>

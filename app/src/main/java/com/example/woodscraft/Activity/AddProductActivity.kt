@@ -176,7 +176,7 @@ class AddProductActivity : AppCompatActivity() {
                         binding.ratingTxt.text = ""
                         binding.mrpTxt.text = ""
                         binding.currentPrice.text = ""
-                        binding.productJpg.setImageURI(null)
+                        binding.productJpg.setImageResource(R.drawable.img_box)
                     } else {
                         println("Adding New Product failed not getting response")
                     }

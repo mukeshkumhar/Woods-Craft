@@ -52,6 +52,13 @@ data class LoginResponse(
 )
 
 // All product data models
+data class ProductInLimit(
+    val products: List<Product>,
+    val cuttentPage: Int,
+    val totalPages: Int,
+    val totalProducts: Int,
+)
+
 data class Product(
     val price: Price,
     val _id: String?,
@@ -72,7 +79,7 @@ data class Price(
 
 data class ListOfProduct(
     val statusCode: Int,
-    val data: List<Product>,
+    val data: ProductInLimit,
     val message: String,
     val success: Boolean,
 )

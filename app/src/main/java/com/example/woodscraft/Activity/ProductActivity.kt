@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.example.woodscraft.Authentication.AuthInterceptor
+import com.example.woodscraft.DataModels.AddToCartResponse
 import com.example.woodscraft.DataModels.AddWishlistResponse
 import com.example.woodscraft.DataModels.RemoveWishlistResponse
 import com.example.woodscraft.R
@@ -47,10 +48,6 @@ class ProductActivity : AppCompatActivity() {
         binding.backBtn.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
-        }
-
-        binding.addToCart.setOnClickListener {
-
         }
 
         val productId = intent.getStringExtra("productId")
@@ -99,7 +96,6 @@ class ProductActivity : AppCompatActivity() {
 
 
         binding.likeImg.setOnClickListener {
-            println(productId)
             if (!isProductInWishlist) {
                 if (productId != null) {
                     apiServiceWithInterceptor.addToWishlist(productId)
@@ -170,6 +166,27 @@ class ProductActivity : AppCompatActivity() {
                             }
                         })
                 }
+            }
+        }
+        binding.addToCart.setOnClickListener{
+            if (productId != null) {
+                apiServiceWithInterceptor.addToCart(productId).enqueue(object : Callback<AddToCartResponse>{
+                    override fun onResponse(
+                        p0: Call<AddToCartResponse>,
+                        p1: Response<AddToCartResponse>
+                    ) {
+                        if (p1.isSuccessful && p1.body() != null) {
+                            binding.addToCart.text = "Added to cart"
+                        } else {
+                            Toast.makeText(this@ProductActivity, "Failed to add to cart", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(p0: Call<AddToCartResponse>, p1: Throwable) {
+                        Log.e("LikeProductAdapter", "Adding Product From Cart failed: ${p1.message}", p1)
+                    }
+
+                })
             }
         }
     }

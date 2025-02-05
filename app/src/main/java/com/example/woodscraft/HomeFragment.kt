@@ -12,10 +12,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.example.woodscraft.Adapter.AdminProductAdapter
 import com.example.woodscraft.Adapter.AllProductAdapter
 import com.example.woodscraft.Adapter.ImageSliderAdapter
 import com.example.woodscraft.Authentication.AuthInterceptor
@@ -30,6 +34,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.RecursiveTask
 
 class HomeFragment : Fragment() {
 
@@ -39,8 +44,13 @@ class HomeFragment : Fragment() {
     private lateinit var runnable: Runnable
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: AllProductAdapter
+    private lateinit var productAdapter: AllProductAdapter
     private val productList = mutableListOf<Product>()
+
+    private var currentPage = 1
+    private var totalPages =1
+    private var isLoading = false
+    private val itemsPerPage = 5 // Number of items to load per page
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +67,16 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView = view.findViewById(R.id.product_recycle_view)
-        recyclerView.layoutManager = GridLayoutManager(context, 2)
+
+
+
+        val layoutManager = GridLayoutManager(context,2)
+//        val layoutManager = LinearLayoutManager(requireContext())
+//        recyclerView.layoutManager = GridLayoutManager(context, 2)
+        recyclerView.layoutManager = layoutManager
+        productAdapter = AllProductAdapter(productList)
+        recyclerView.adapter = productAdapter
+
 
 
         val image = listOf(R.drawable.png5,R.drawable.png4,R.drawable.png7)
@@ -118,6 +137,104 @@ class HomeFragment : Fragment() {
 
 
 
+//        val sharedPreferences = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+//        val authInterceptor = AuthInterceptor(sharedPreferences)
+//
+//        val okHttpClient = OkHttpClient.Builder()
+//            .addInterceptor(authInterceptor)
+//            .build()
+//
+//        val retrofit = Retrofit.Builder()
+//            .baseUrl(RetrofitInstance.BASE_URL)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .client(okHttpClient)
+//            .build()
+//
+//        val apiServiceWithInterceptor = retrofit.create(ApiService::class.java)
+//
+//        lifecycleScope.launch {
+//            try {
+//                val response = apiServiceWithInterceptor.getAllProduct(page = 1, limit = 10)
+////                if (response.isSuccessful && response.body() != null) {
+//                    val products = response.data.products // Assuming your ListOfProduct has a property named "products"
+//                    productList.clear()
+//                    if (products != null) {
+//                        productList.addAll(products)
+//                    } else {
+//                        println("product will be null")
+//                    }
+////                    adapter.notifyDataSetChanged()
+//                    println(productList)
+//                    val Adapter = AllProductAdapter(productList)
+//                    recyclerView.adapter = Adapter
+////                } else {
+////                    println("Getting product failed")
+////                }
+//            } catch (e: Exception) {
+//                Log.e("Home Fragment", "Getting AllProduct failed: ${e.message}", e)
+//                Toast.makeText(
+//                    requireContext(),
+//                    "Getting AllProduct failed due to network error",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+
+
+
+        // Load initial data
+        loadProducts()
+
+        // Add scroll listener for infinite scrolling
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int){
+                super.onScrolled(recyclerView, dx, dy)
+                val visibleItemsCount = layoutManager.childCount
+//                println("VisibleItemCount: "+visibleItemsCount)
+                val totalItemCount = layoutManager.itemCount
+                println("Total Item Count: "+ totalItemCount)
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+//                println("firstVisibleItemPosition: $firstVisibleItemPosition")
+
+                if (!isLoading && currentPage <= totalPages) {
+                    if (visibleItemsCount + firstVisibleItemPosition >= totalItemCount && firstVisibleItemPosition >= 0) {
+                        loadProducts()
+                    }
+                }
+            }
+        })
+
+//        apiServiceWithInterceptor.getAllProduct(page = 1, limit = 10).enqueue(object : Callback<ListOfProduct> {
+//            override fun onResponse(p0: Call<ListOfProduct>, p1: Response<ListOfProduct>) {
+//                if (p1.isSuccessful && p1.body() != null){
+//                    val products = p1.body()?.data // Assuming your ListOfProduct has a property named "products"
+//                    productList.clear()
+//                    if (products != null) {
+//                        productList.addAll(products)
+//                    } else {
+//                        println("product will be null")
+//                    }
+//                    adapter.notifyDataSetChanged()
+//                    println(productList)
+//                    val Adapter = AllProductAdapter(productList)
+//                    recyclerView.adapter = Adapter
+//
+//                } else {
+//                    println("Getting product failed")
+//                }
+//            }
+//
+//            override fun onFailure(p0: Call<ListOfProduct>, p1: Throwable) {
+//                Log.e("HomeFragment", "Getting AllProduct failed: ${p1.message}", p1)
+//                Toast.makeText(this@HomeFragment.requireContext(), "Getting AllProduct failed due to network error", Toast.LENGTH_SHORT).show()
+//
+//            }
+//
+//        })
+
+    }
+
+    private fun loadProducts() {
         val sharedPreferences = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val authInterceptor = AuthInterceptor(sharedPreferences)
 
@@ -132,38 +249,52 @@ class HomeFragment : Fragment() {
             .build()
 
         val apiServiceWithInterceptor = retrofit.create(ApiService::class.java)
-
-        apiServiceWithInterceptor.getAllProduct().enqueue(object : Callback<ListOfProduct> {
-            override fun onResponse(p0: Call<ListOfProduct>, p1: Response<ListOfProduct>) {
-                if (p1.isSuccessful && p1.body() != null){
-                    val products = p1.body()?.data // Assuming your ListOfProduct has a property named "products"
-                    productList.clear()
-                    if (products != null) {
-                        productList.addAll(products)
-                    } else {
-                        println("product will be null")
-                    }
-                    adapter.notifyDataSetChanged()
-                    println(productList)
-                    val Adapter = AllProductAdapter(productList)
-                    recyclerView.adapter = Adapter
-
-                } else {
-                    println("Getting product failed")
+        if(isLoading) return
+        isLoading = true
+        lifecycleScope.launch {
+            try {
+                val response = apiServiceWithInterceptor.getAllProduct(currentPage, itemsPerPage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    )
+//                if (response.isSuccessful && response.body() != null) {
+                val products = response.data.products // Assuming your ListOfProduct has a property named "products"
+                if (response.data.totalPages != null){
+                    totalPages = response.data.totalPages
                 }
+
+                println("Total Pages: "+totalPages)
+                val newProduct = response.data.products
+                println(newProduct)
+                val startPosition = productList.size
+                productList.addAll(newProduct)
+//                println(productList)
+                productAdapter.notifyItemRangeInserted(startPosition, newProduct.size)
+                currentPage++
+//                if (products != null) {
+//                    productList.addAll(products)
+//                    productAdapter.notifyDataSetChanged()
+//                    currentPage++
+//                } else {
+//                    println("product will be null")
+//                }
+//                    adapter.notifyDataSetChanged()
+
+//                val Adapter = AllProductAdapter(productList)
+//                recyclerView.adapter = Adapter
+//                } else {
+//                    println("Getting product failed")
+//                }
+            } catch (e: Exception) {
+                Log.e("Home Fragment", "Getting AllProduct failed: ${e.message}", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Getting AllProduct failed due to network error",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                isLoading = false
             }
+        }
 
-            override fun onFailure(p0: Call<ListOfProduct>, p1: Throwable) {
-                Log.e("HomeFragment", "Getting AllProduct failed: ${p1.message}", p1)
-                Toast.makeText(this@HomeFragment.requireContext(), "Getting AllProduct failed due to network error", Toast.LENGTH_SHORT).show()
-
-            }
-
-        })
     }
-
-
-
 
 
     override fun onPause() {

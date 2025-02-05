@@ -9,12 +9,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.woodscraft.Adapter.AdminProductAdapter
 import com.example.woodscraft.Authentication.AuthInterceptor
 import com.example.woodscraft.DataModels.ListOfProduct
 import com.example.woodscraft.DataModels.Product
+import com.example.woodscraft.DataModels.ProductInLimit
 import com.example.woodscraft.R
 import com.example.woodscraft.Routes.ApiService
 import com.example.woodscraft.URLs.RetrofitInstance
@@ -31,6 +34,11 @@ class YourAllProductActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: AdminProductAdapter
     private val productList = mutableListOf<Product>()
+    private var currentPage = 1
+    private var totalPages = 1
+    private var isLoading = false
+    private val itemsPerPage = 5  // Number of items to load per page
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -41,7 +49,7 @@ class YourAllProductActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        recyclerView = findViewById<RecyclerView>(R.id.my_product_recycle_view)
+        recyclerView = findViewById(R.id.my_product_recycle_view)
 //        recyclerView.layoutManager = GridLayoutManager(context, 1)
         recyclerView.layoutManager = GridLayoutManager(this, 1)
 
@@ -67,10 +75,11 @@ class YourAllProductActivity : AppCompatActivity() {
 
         val apiServiceWithInterceptor = retrofit.create(ApiService::class.java)
 
-        apiServiceWithInterceptor.getAllProduct().enqueue(object : Callback<ListOfProduct> {
-            override fun onResponse(p0: Call<ListOfProduct>, p1: Response<ListOfProduct>) {
-                if (p1.isSuccessful && p1.body() != null){
-                    val products = p1.body()?.data // Assuming your ListOfProduct has a property named "products"
+        lifecycleScope.launch {
+            try {
+                val response = apiServiceWithInterceptor.getAllProduct(currentPage, itemsPerPage)
+//                if (response.isSuccessful && response.body() != null) {
+                    val products = response.data.products // Assuming your ListOfProduct has a property named "products"
                     productList.clear()
                     if (products != null) {
                         productList.addAll(products)
@@ -81,18 +90,44 @@ class YourAllProductActivity : AppCompatActivity() {
                     println(productList)
                     val Adapter = AdminProductAdapter(productList)
                     recyclerView.adapter = Adapter
-
-                } else {
-                    println("Getting product failed")
-                }
+//                } else {
+//                    println("Getting product failed")
+//                }
+            } catch (e: Exception) {
+                Log.e("YourAllProductActivity", "Getting AllProduct failed: ${e.message}", e)
+                Toast.makeText(
+                    this@YourAllProductActivity,
+                    "Getting AllProduct failed due to network error",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-
-            override fun onFailure(p0: Call<ListOfProduct>, p1: Throwable) {
-                Log.e("HomeFragment", "Getting AllProduct failed: ${p1.message}", p1)
-                Toast.makeText(this@YourAllProductActivity, "Getting AllProduct failed due to network error", Toast.LENGTH_SHORT).show()
-
-            }
-
-        })
+        }
+//        apiServiceWithInterceptor.getAllProduct().enqueue(object : Callback<ListOfProduct> {
+//            override fun onResponse(p0: Call<ListOfProduct>, p1: Response<ListOfProduct>) {
+//                if (p1.isSuccessful && p1.body() != null){
+//                    val products = p1.body()?.data // Assuming your ListOfProduct has a property named "products"
+//                    productList.clear()
+//                    if (products != null) {
+//                        productList.addAll(products)
+//                    } else {
+//                        println("product will be null")
+//                    }
+////                    adapter.notifyDataSetChanged()
+//                    println(productList)
+//                    val Adapter = AdminProductAdapter(productList)
+//                    recyclerView.adapter = Adapter
+//
+//                } else {
+//                    println("Getting product failed")
+//                }
+//            }
+//
+//            override fun onFailure(p0: Call<ListOfProduct>, p1: Throwable) {
+//                Log.e("HomeFragment", "Getting AllProduct failed: ${p1.message}", p1)
+//                Toast.makeText(this@YourAllProductActivity, "Getting AllProduct failed due to network error", Toast.LENGTH_SHORT).show()
+//
+//            }
+//
+//        })
     }
 }
