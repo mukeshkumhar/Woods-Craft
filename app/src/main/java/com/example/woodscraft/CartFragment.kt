@@ -75,6 +75,7 @@ class CartFragment : Fragment() {
 
                     val Adapter = CartProductAdapter(productList)
                     recyclerView.adapter = Adapter
+                    calculateTotalPrice()
                 }
             }
 
@@ -84,6 +85,25 @@ class CartFragment : Fragment() {
             }
 
         })
+
+
+    }
+    private fun calculateTotalPrice() {
+        var totalPrice = 0
+        println(productList)
+        for (product in productList) {
+            totalPrice +=  product.price.currentPrice
+            println("Total Price: $totalPrice")
+        }
+        binding.subtotal.text = "₹ $totalPrice"
+        val delivery = (0.05*totalPrice)
+        println(totalPrice)
+        println(delivery)
+        binding.deliveryFee.text = "₹ $delivery"
+        val finalPrice = totalPrice + delivery
+        println(finalPrice)
+        binding.totalAmount.text = "₹ $finalPrice"
+//        display the total price in the UI
     }
 }
 

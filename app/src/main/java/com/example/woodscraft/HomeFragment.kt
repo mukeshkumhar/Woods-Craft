@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.viewpager2.widget.ViewPager2
 import com.example.woodscraft.Adapter.AdminProductAdapter
 import com.example.woodscraft.Adapter.AllProductAdapter
@@ -46,11 +47,13 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var productAdapter: AllProductAdapter
     private val productList = mutableListOf<Product>()
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private var currentPage = 1
     private var totalPages =1
     private var isLoading = false
     private val itemsPerPage = 5 // Number of items to load per page
+    private var isDataLoaded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,6 +70,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView = view.findViewById(R.id.product_recycle_view)
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
 
 
 
@@ -204,6 +208,11 @@ class HomeFragment : Fragment() {
             }
         })
 
+        // Set up SwipeRefreshLayout listener
+        swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
+        }
+
 //        apiServiceWithInterceptor.getAllProduct(page = 1, limit = 10).enqueue(object : Callback<ListOfProduct> {
 //            override fun onResponse(p0: Call<ListOfProduct>, p1: Response<ListOfProduct>) {
 //                if (p1.isSuccessful && p1.body() != null){
@@ -291,9 +300,21 @@ class HomeFragment : Fragment() {
                 ).show()
             } finally {
                 isLoading = false
+                if (swipeRefreshLayout.isRefreshing) {
+                    swipeRefreshLayout.isRefreshing = false
+                }
             }
         }
 
+    }
+
+    private fun refreshData() {
+        currentPage = 1
+        totalPages = 1
+        productList.clear()
+        productAdapter.notifyDataSetChanged()
+        swipeRefreshLayout.isRefreshing = true
+        loadProducts()
     }
 
 

@@ -110,4 +110,5 @@ class CartProductAdapter(private val productList: MutableList<CartProduct>): Rec
             })
         }
     }
+
 }

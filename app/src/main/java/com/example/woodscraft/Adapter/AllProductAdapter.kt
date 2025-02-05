@@ -74,6 +74,7 @@ class AllProductAdapter(private val productList: List<Product>) : RecyclerView.A
             val intent = Intent(context, ProductActivity::class.java).apply {
                 putExtra("productId", product.productId)
                 putExtra("productName", product.name)
+//                putStringArrayListExtra("productImages", ArrayList(product.images))
                 putExtra("productImage", product.images[0])
                 putExtra("productDes", product.description)
                 putExtra("productSubtitle", product.summery)

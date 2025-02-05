@@ -53,6 +53,7 @@ class ProductActivity : AppCompatActivity() {
         val productId = intent.getStringExtra("productId")
         val productName = intent.getStringExtra("productName")
         val productImage = intent.getStringExtra("productImage")
+//        val productImage = intent.getStringArrayListExtra("productImage")?: emptyList()
         val productDes = intent.getStringExtra("productDes")
         val productSubtitle = intent.getStringExtra("productSubtitle")
         val productRating = intent.getStringExtra("productRating")
